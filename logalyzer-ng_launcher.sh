@@ -21,7 +21,7 @@ if [[ "$EUID" -ne 0 ]]; then
     exit 1
 fi
 
-#######
+##############
 # -u : Specify user
 # --full : Full log dump for specified user
 # -l : Specify log file
@@ -29,7 +29,11 @@ fi
 # -s : List success logs
 # -c : List commands by user
 # -i : List IP Addresses
-#######
+# -b : Brute-force attempts
+# --sudo-fail : Failed sudo attempts
+# --su-fail : Failed su
+# --accounts : Account events
+##############
 
 html_header() {
     cat <<'EOF'
