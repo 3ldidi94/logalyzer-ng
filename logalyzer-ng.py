@@ -47,6 +47,11 @@ if __name__=="__main__":
     parser.add_option("-c", help="List commands by user", action="store_true", default=False, dest="commands")
     parser.add_option("-i", help="List IP Addresses", action="store_true", default=False, dest="ip")
     parser.add_option("-v", help="Show launch info (timestamp, log file)", action="store_true", default=False, dest="verbose")
+    parser.add_option("-a", help="List all usernames attempted by attackers", action="store_true", default=False, dest="attackers")
+    parser.add_option("-b", help="List brute-force attempts", action="store_true", default=False, dest="bruteforce")
+    parser.add_option("--sudo-fail", help="List failed sudo attempts (NOT in sudoers)", action="store_true", default=False, dest="sudo_fail")
+    parser.add_option("--su-fail", help="List failed su attempts", action="store_true", default=False, dest="su_fail")
+    parser.add_option("--accounts", help="List account creation/modification/deletion events", action="store_true", default=False, dest="accounts")
 
     # get arguments
     (options, args) = parser.parse_args()
@@ -209,6 +214,51 @@ if __name__=="__main__":
         for comm in LOGS[options.user].commands:
             print("\t", comm)
 
+    # brute-force attempts
+    if options.bruteforce:
+        found = False
+        for user in LOGS:
+            if user and LOGS[user].bruteforce_logs:
+                found = True
+                print(f"[+] Brute-force detected for '{user}':")
+                for entry in LOGS[user].bruteforce_logs:
+                    print(f"\t{entry}")
+        if not found:
+            print("[-] No brute-force attempts found")
+
+    # failed sudo attempts
+    if options.sudo_fail:
+        found = False
+        for user in LOGS:
+            if user and LOGS[user].sudo_fail_logs:
+                found = True
+                print(f"[!] NOT in sudoers — '{user}':")
+                for entry in LOGS[user].sudo_fail_logs:
+                    print(f"\t{entry}")
+        if not found:
+            print("[-] No failed sudo attempts found")
+
+    # failed su attempts
+    if options.su_fail:
+        found = False
+        for user in LOGS:
+            if user and LOGS[user].su_fail_logs:
+                found = True
+                print(f"[!] Failed su — by '{user}':")
+                for entry in LOGS[user].su_fail_logs:
+                    print(f"\t{entry}")
+        if not found:
+            print("[-] No failed su attempts found")
+
+    # account creation / modification / deletion
+    if options.accounts:
+        if "_system" in LOGS and LOGS["_system"].account_events:
+            print("[+] Account events:")
+            for entry in LOGS["_system"].account_events:
+                print(f"\t{entry}")
+        else:
+            print("[-] No account events found")
+
     # dump the full log for the user if specified
     if options.fullu and options.user:
         print("[*] Full Log")
@@ -216,9 +266,9 @@ if __name__=="__main__":
             print(log)
 
     # if they supplied us with an empty user, dump all of the logged users
-    elif options.user is None and not options.verbose:
+    elif options.attackers:
         if len(LOGS) > 0:
-            print ("[+] Users attempted by attackers")
+            print("[+] Users attempted by attackers")
             for user in LOGS:
                 if user is not None:
-                    print("\t",user)
+                    print("\t", user)

@@ -46,16 +46,21 @@ sudo python3 logalyzer-ng.py [options]
 
 ### Flags
 
-| Flag        | Description |
-|-------------|-------------|
-| `-u <user>` | Filter by user (omit to list all) |
-| `-i`        | Show IP addresses |
-| `-f`        | Show failure logs |
-| `-s`        | Show success logs |
-| `-c`        | Show commands (sudo) |
-| `--full`    | Full raw log dump for specified user |
-| `-l <file>` | Use a custom log file (default: `/var/log/auth.log`) |
-| `-v`        | Verbose: show timestamp, log file path, size, last rotation |
+| Flag          | Description |
+|---------------|-------------|
+| `-u <user>`   | Filter by user (omit to list all) |
+| `-i`          | Show IP addresses |
+| `-f`          | Show failure logs |
+| `-s`          | Show success logs |
+| `-c`          | Show commands (sudo) |
+| `-a`          | List all usernames attempted by attackers |
+| `-b`          | List brute-force attempts (`Too many authentication failures`) |
+| `--sudo-fail` | List failed sudo attempts (`NOT in sudoers`) |
+| `--su-fail`   | List failed `su` attempts |
+| `--accounts`  | List account creation / modification / deletion events |
+| `--full`      | Full raw log dump for specified user |
+| `-l <file>`   | Use a custom log file (default: `/var/log/auth.log`) |
+| `-v`          | Verbose: show timestamp, log file path, size, last rotation |
 
 ### Examples
 
@@ -70,7 +75,17 @@ sudo python3 logalyzer-ng.py -u alice -f -i
 sudo python3 logalyzer-ng.py -u root -c
 
 # All usernames tried by attackers
-sudo python3 logalyzer-ng.py
+sudo python3 logalyzer-ng.py -a
+
+# Brute-force attempts
+sudo python3 logalyzer-ng.py -b
+
+# Failed sudo / su attempts
+sudo python3 logalyzer-ng.py --sudo-fail
+sudo python3 logalyzer-ng.py --su-fail
+
+# Account creation / modification / deletion
+sudo python3 logalyzer-ng.py --accounts
 
 # Verbose info about the log file
 sudo python3 logalyzer-ng.py -v
@@ -97,7 +112,11 @@ sudo bash logalyzer-ng_launcher.sh
 | Failed IPs + Whois | `-f -i -u $MONITORED_USER` |
 | Failure logs | `-f -u $MONITORED_USER` |
 | Root commands | `-u root -c` |
-| Attempted attackers | *(no flags)* |
+| Attempted attackers | `-a` |
+| Brute-force attempts | `-b` |
+| Failed sudo attempts | `--sudo-fail` |
+| Failed su attempts | `--su-fail` |
+| Account events | `--accounts` |
 
 **Color coding in the HTML report:**
 
@@ -132,11 +151,17 @@ logalyzer-ng/
 ```
 LOGS = {
   "username": Log(
-    logs      = ["raw line", ...],    # all lines
-    fail_logs = ["raw line", ...],    # Failed password / auth failure
-    succ_logs = ["raw line", ...],    # Accepted password
-    ips       = ["1.2.3.4", ...],     # IPs seen for this user
-    commands  = ["/usr/bin/...", ...]  # sudo COMMAND= entries
+    logs            = ["raw line", ...],   # all lines
+    fail_logs       = ["raw line", ...],   # Failed password / auth failure
+    succ_logs       = ["raw line", ...],   # Accepted password
+    ips             = ["1.2.3.4", ...],    # IPs seen for this user
+    commands        = ["/usr/bin/...", ...]# sudo COMMAND= entries
+    bruteforce_logs = ["raw line", ...],   # Too many authentication failures
+    sudo_fail_logs  = ["raw line", ...],   # NOT in sudoers
+    su_fail_logs    = ["raw line", ...],   # FAILED su for
+  ),
+  "_system": Log(
+    account_events  = ["raw line", ...],   # useradd / usermod / userdel / new user / new group
   ),
   None: Log(...)  # lines where the user could not be parsed
 }

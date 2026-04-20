@@ -56,7 +56,23 @@ html_header() {
 </head>
 <body>
 EOF
-    echo "<h1>VPS Activity Report</h1>"
+    cat <<'LOGOEOF'
+<table cellpadding="0" cellspacing="0" style="background:#252526;border:1px solid #3c3c3c;border-radius:6px;padding:18px 22px;margin-bottom:28px;width:100%;">
+  <tr>
+    <td style="width:52px;vertical-align:middle;font-size:38px;padding-right:18px;">&#128274;</td>
+    <td style="vertical-align:middle;">
+      <div style="font-family:'Courier New',monospace;font-size:26px;font-weight:bold;color:#569cd6;letter-spacing:2px;">
+        LOGALYZER<span style="color:#dcdcaa;font-size:20px;">-ng</span>
+      </div>
+      <div style="font-family:'Courier New',monospace;font-size:12px;color:#4ec9b0;letter-spacing:1px;margin-top:5px;border-top:1px solid #3c3c3c;padding-top:5px;">
+        SSH Auth Log Analyzer
+        <br>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;<br>
+        VPS Security Report
+      </div>
+    </td>
+  </tr>
+</table>
+LOGOEOF
     echo "<p class='meta'>Generated: $(date '+%Y-%m-%d at %Hh%Mm%Ss')</p>"
 }
 
@@ -105,7 +121,19 @@ colorize() {
         "$(python3 "$SCRIPT_DIR/logalyzer-ng.py" -u root -c | html_escape | colorize)"
 
     html_section "Attempted users from attackers" \
-        "$(python3 "$SCRIPT_DIR/logalyzer-ng.py" | html_escape | colorize)"
+        "$(python3 "$SCRIPT_DIR/logalyzer-ng.py" -a | html_escape | colorize)"
+
+    html_section "Brute-force attempts" \
+        "$(python3 "$SCRIPT_DIR/logalyzer-ng.py" -b | html_escape | colorize)"
+
+    html_section "Failed sudo attempts (NOT in sudoers)" \
+        "$(python3 "$SCRIPT_DIR/logalyzer-ng.py" --sudo-fail | html_escape | colorize)"
+
+    html_section "Failed su attempts" \
+        "$(python3 "$SCRIPT_DIR/logalyzer-ng.py" --su-fail | html_escape | colorize)"
+
+    html_section "Account events (create / modify / delete)" \
+        "$(python3 "$SCRIPT_DIR/logalyzer-ng.py" --accounts | html_escape | colorize)"
 
     html_footer
 } > "$FILE"
