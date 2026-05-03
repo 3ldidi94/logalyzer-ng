@@ -144,6 +144,7 @@ colorize() {
 
 ## Send Mail:
 {
+    echo "From: VPS Monitoring <$MAIL>"
     echo "To: $MAIL"
     echo "Subject: [VPS]: VPS daily activities summary."
     echo "MIME-Version: 1.0"
