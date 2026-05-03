@@ -20,7 +20,7 @@ def domain_resolver():
             print(f"\t[!] DNS resolution failed for domain: {domain}")
             continue
 
-        if (False in [True for item in ip.split('.') if (int(item) in range(0,255))]):
+        if not all(int(item) in range(0, 256) for item in ip.split('.')):
             continue
 
         if ip not in known_ip:
@@ -73,7 +73,7 @@ def resolver(ips):
             else:
                 print(f"        IP address {ip} already known!")
     else:
-        exit("Provided IPs to resolve are not in list or string format")
+        raise TypeError("Provided IPs to resolve are not in list or string format")
 
 if __name__=="__main__":
     argparser = argparse.ArgumentParser(description="This program resolve a list or a single IP address to retreive information about the owner. Default resolve a list of random IPs.")
@@ -88,11 +88,12 @@ if __name__=="__main__":
         liste = []
         with open(args.file, "r") as file:
             for line in file:
-                liste.append(line.strip())
+                ip = line.strip()
+                if ip:
+                    liste.append(ip)
         resolver(liste)
 
     if not args.ip and not args.file:
         ## RANDOM IP FOR TESTING PURPOSE
         random_ip = ["1.1.1.1","8.8.8.8","9.9.9.9","208.67.222.222","94.140.14.14"]
-        for ip in random_ip:
-            resolver(ip)
+        resolver(random_ip)
