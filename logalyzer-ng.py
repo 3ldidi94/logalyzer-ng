@@ -85,11 +85,12 @@ if __name__=="__main__":
         print(f"[-] No logs to parse in the {options.log} logfile!")
         sys.exit(1)
 
-    # validate the user, fallback to rotated log if not found
+    # validate the user, fallback to rotated logs if not found
     if options.user:
         if not options.user in LOGS:
-            rotated_log = log + '.1'
-            if os.path.isfile(rotated_log):
+            candidates = [log + '.1', log + '.1.gz', log + '.2.gz']
+            rotated_log = next((c for c in candidates if os.path.isfile(c)), None)
+            if rotated_log:
                 print(f"[!] User '{options.user}' not found in {log}, trying {rotated_log}...")
                 LOGS = ParseLogs(rotated_log)
                 if LOGS is None or options.user not in LOGS:
@@ -103,20 +104,26 @@ if __name__=="__main__":
     # output all commands
     if options.commands and not options.user:
         for user in LOGS:
+            if user is None:
+                continue
             for comms in LOGS[user].commands:
                 print(f"{user}:\t{comms}")
 
     # output all failures
     elif options.fail and not options.user:
         for user in LOGS:
+            if user is None:
+                continue
             for fail in LOGS[user].fail_logs:
                 print(f"{user}:\t{fail}")
 
     # output all logged IP addresses
     elif options.ip and not options.user:
         for user in LOGS:
+            if user is None:
+                continue
             for ip in LOGS[user].ips:
-                if ip and user is not None:
+                if ip:
                     print(f"{user}:\t{ip}")
 
     # output user-specific commands
@@ -164,12 +171,13 @@ if __name__=="__main__":
 
     # output user-specific failures
     elif options.fail and options.user:
-        for fail in LOGS[options.user].fail_logs:
-            if fail:
-                print(f"[+] Failures for user '{options.user}'")
-                print(f"\t{fail}")
-        else:
+        if not LOGS[options.user].fail_logs:
             print(f"[-] No failure for user '{options.user}'")
+        else:
+            print(f"[+] Failures for user '{options.user}':")
+            for fail in LOGS[options.user].fail_logs:
+                if fail:
+                    print(f"\t{fail}")
 
     # output user-specific ip addresses
     elif options.ip and options.user:
@@ -200,19 +208,23 @@ if __name__=="__main__":
         print(f"[*] Logs associated with user '{options.user}'")
         print(f"[*] First log: {LOGS[options.user].first_date()}")
         print(f"[*] Last log: {LOGS[options.user].last_date()}")
-        print("[*] Failure Logs")
-        for fail in LOGS[options.user].fail_logs:
-            print("\t", fail)
-        print("[*] Success Logs")
-        for succ in LOGS[options.user].succ_logs:
-            print("\t", succ)
-        print("[*] Associated IPs")
-        for ip in LOGS[options.user].ips:
-            if ip is not None:
-                print("\t", ip)
-        print("[*] Commands")
-        for comm in LOGS[options.user].commands:
-            print("\t", comm)
+        if LOGS[options.user].fail_logs:
+            print("[*] Failure Logs")
+            for fail in LOGS[options.user].fail_logs:
+                print("\t", fail)
+        if LOGS[options.user].succ_logs:
+            print("[*] Success Logs")
+            for succ in LOGS[options.user].succ_logs:
+                print("\t", succ)
+        if LOGS[options.user].ips:
+            print("[*] Associated IPs")
+            for ip in LOGS[options.user].ips:
+                if ip is not None:
+                    print("\t", ip)
+        if LOGS[options.user].commands:
+            print("[*] Commands")
+            for comm in LOGS[options.user].commands:
+                print("\t", comm)
 
     # brute-force attempts
     if options.bruteforce:

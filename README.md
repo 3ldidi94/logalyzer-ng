@@ -64,34 +64,131 @@ sudo python3 logalyzer-ng.py [options]
 
 ### Examples
 
+**Commands run by a user (`-u -c`)**
+
 ```bash
-# IPs that successfully authenticated as alice
-sudo python3 logalyzer-ng.py -u alice -i
+python3 logalyzer-ng.py -u alice -c
 
-# Failed IPs + Whois on unknown ones
-sudo python3 logalyzer-ng.py -u alice -f -i
-
-# Commands run by root
-sudo python3 logalyzer-ng.py -u root -c
-
-# All usernames tried by attackers
-sudo python3 logalyzer-ng.py -a
-
-# Brute-force attempts
-sudo python3 logalyzer-ng.py -b
-
-# Failed sudo / su attempts
-sudo python3 logalyzer-ng.py --sudo-fail
-sudo python3 logalyzer-ng.py --su-fail
-
-# Account creation / modification / deletion
-sudo python3 logalyzer-ng.py --accounts
-
-# Verbose info about the log file
-sudo python3 logalyzer-ng.py -v
+[+] Commands for user 'alice':
+     /sbin/iptables -L -n
 ```
 
-> If the user is not found in `auth.log`, the script automatically falls back to `auth.log.1`.
+**IPs that successfully authenticated (`-u -i`)**
+
+```bash
+python3 logalyzer-ng.py -u alice -i
+
+[+] Logged IPs for user 'alice':
+        198.51.100.5 (Known IP!)
+        203.0.113.10  (Known IP!)
+```
+
+**Failure logs for a user (`-u -f`)**
+
+```bash
+python3 logalyzer-ng.py -u alice -f
+
+[+] Failures for user 'alice':
+     2026-04-19T23:44:29+02:00 localhost sshd[1234]: Failed password for invalid user alice from 203.0.113.10 port 1667 ssh2
+     2026-04-19T23:44:33+02:00 localhost sshd[1234]: Failed password for invalid user alice from 203.0.113.10 port 1667 ssh2
+     2026-04-20T00:02:52+02:00 localhost sshd[5678]: Failed password for invalid user alice from 198.51.100.5 port 41826 ssh2
+```
+
+**Failed IPs + Whois on unknown ones (`-u -f -i`)**
+
+```bash
+python3 logalyzer-ng.py -u alice -f -i
+
+[+] Failed IPs for user 'alice':
+     203.0.113.10 (Known IP!)
+     198.51.100.5
+
+[*] Whois on unknown IPs that FAILED for user 'alice'
+     198.51.100.5:
+     -------------
+     COUNTRY: CN
+     DESCRIPTION: Shenzhen Example Network Technology Co., Ltd
+     ADDRESS: Building A - 10 Example Road, Shenzhen
+     CIDR: 198.51.100.0/24
+     EMAILS: abuse@example-isp.cn |
+
+     -------------
+```
+
+**Commands run by root (`-u -c`)**
+
+```bash
+python3 logalyzer-ng.py -u root -c
+
+[+] Commands for user 'root':
+     /usr/bin/apt update
+     /usr/bin/apt upgrade -y
+     /usr/sbin/ufw status
+     /usr/bin/systemctl restart ssh
+     /usr/bin/tail -f /var/log/auth.log
+     /usr/bin/journalctl -u ssh --since today
+```
+
+**All usernames tried by attackers (`-a`)**
+
+```bash
+python3 logalyzer-ng.py -a
+
+[+] Users attempted by attackers
+     admin
+     root
+     ubuntu
+     deploy
+     test
+     guest
+     oracle
+     ftpuser
+     git
+     support
+     pam_unix
+```
+
+**Brute-force attempts (`-b`)**
+
+```bash
+python3 logalyzer-ng.py -b
+
+[+] Brute-force detected for 'root':
+     2026-04-20T03:12:44+02:00 localhost sshd[2301145]: Disconnecting authenticating user root 198.51.100.5 port 52218: Too many authentication failures [preauth]
+     2026-04-20T03:14:01+02:00 localhost sshd[2301892]: Disconnecting authenticating user root 198.51.100.5 port 61034: Too many authentication failures [preauth]
+```
+
+**Failed sudo attempt — privilege escalation (`--sudo-fail`)**
+
+```bash
+python3 logalyzer-ng.py --sudo-fail
+
+[!] NOT in sudoers — 'bob':
+     2026-04-20T11:32:05+02:00 localhost sudo: bob : user NOT in sudoers ; TTY=pts/1 ; PWD=/home/bob ; USER=root ; COMMAND=/usr/bin/cat /etc/shadow
+```
+
+**Account events (`--accounts`)**
+
+```bash
+sudo python3 logalyzer-ng.py --accounts
+
+[+] Account events:
+     2026-04-20T14:05:12+02:00 localhost useradd[3120]: new user: name=deploy, UID=1002, GID=1002, home=/home/deploy, shell=/bin/bash
+     2026-04-20T14:07:33+02:00 localhost usermod[3198]: change user 'deploy' password
+```
+
+**Verbose log file info (`-v`)**
+
+```bash
+sudo python3 logalyzer-ng.py -v
+
+[*] Launched: 2026-04-20 at 15h30m00s
+[*] Log file: /var/log/auth.log
+[*] Last rotation: 2026-04-14T00:00:01
+[*] Log size: 2847.3 KB
+```
+
+> If the user is not found in `auth.log`, the script automatically falls back to `auth.log.1` or `auth.log.2.gz`.
 
 ---
 
