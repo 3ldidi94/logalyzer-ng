@@ -26,11 +26,28 @@ def domain_resolver():
         if ip not in known_ip:
             known_ip.append(ip)
 
+def is_ip(value):
+    parts = value.split('.')
+    if len(parts) != 4:
+        return False
+    return all(item.isdigit() and int(item) in range(0, 256) for item in parts)
+
+def resolve_to_ip(value):
+    if is_ip(value):
+        return value
+    try:
+        return gethostbyname(value)
+    except gaierror:
+        print(f"\t[!] DNS resolution failed for: {value}")
+        return None
+
 def resolver(ips):
     domain_resolver()
     if isinstance(ips, str):
         ips = list(ips.split(" "))
-    if isinstance(ips, list):        
+    if isinstance(ips, list):
+        ips = [resolve_to_ip(entry) for entry in ips]
+        ips = [ip for ip in ips if ip]
         for ip in ips:
             if ip not in known_ip:
                 try:
