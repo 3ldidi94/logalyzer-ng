@@ -71,7 +71,7 @@ EOF
       <div style="font-family:'Courier New',monospace;font-size:12px;color:#4ec9b0;letter-spacing:1px;margin-top:5px;border-top:1px solid #3c3c3c;padding-top:5px;">
         SSH Auth Log Analyzer
         <br>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;<br>
-        VPS Security Report
+        Security Report
       </div>
     </td>
   </tr>

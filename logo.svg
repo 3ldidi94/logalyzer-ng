@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="100" viewBox="0 0 600 100">
+  <rect width="600" height="100" rx="8" fill="#1e1e1e"/>
+
+  <!-- Shield -->
+  <path d="M44,8 L70,20 L70,50 Q70,72 44,85 Q18,72 18,50 L18,20 Z"
+        fill="none" stroke="#569cd6" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Lock body -->
+  <rect x="32" y="52" width="24" height="18" rx="3" fill="#569cd6"/>
+  <!-- Lock keyhole -->
+  <circle cx="44" cy="59" r="3.5" fill="#1e1e1e"/>
+  <rect x="42.5" y="59" width="3" height="6" fill="#1e1e1e"/>
+  <!-- Lock shackle -->
+  <path d="M35,52 L35,42 Q35,30 44,30 Q53,30 53,42 L53,52"
+        fill="none" stroke="#569cd6" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Title -->
+  <text x="90" y="50" font-family="'Courier New',Courier,monospace" font-size="34" font-weight="bold" letter-spacing="2">
+    <tspan fill="#569cd6">LOGALYZER</tspan><tspan fill="#dcdcaa" font-size="24" dy="4">-ng</tspan>
+  </text>
+
+  <!-- Separator -->
+  <line x1="90" y1="58" x2="570" y2="58" stroke="#3c3c3c" stroke-width="1"/>
+
+  <!-- Subtitle -->
+  <text x="90" y="76" font-family="'Courier New',Courier,monospace" font-size="13" fill="#4ec9b0" letter-spacing="1">SSH Auth Log Analyzer — Security Report</text>
+</svg>
