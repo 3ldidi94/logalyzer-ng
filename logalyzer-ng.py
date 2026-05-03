@@ -70,19 +70,20 @@ if __name__=="__main__":
                 pass
             print(f'[*] Log size: {size_kb:.1f} KB')
 
-    # if they're trying to access /var/log/auth.log without proper privs, exit!
-    if os.getuid() != 0 and options.log is None:
-        print(f"[-] Please run with SUDO privs! Or at least with a user allowed to read {options.log}")
-        sys.exit(1)
+    log = options.log
 
-    # check if they specified another file
-    if options.log is not None:
-        log = options.log
+    # check read permissions before parsing
+    if not os.access(log, os.R_OK):
+        if os.getuid() != 0:
+            print(f"[-] Permission denied: cannot read {log} — try running with sudo.")
+        else:
+            print(f"[-] Cannot read {log}: file not found or permission denied.")
+        sys.exit(1)
 
     # parse logs
     LOGS = ParseLogs(log)
     if LOGS is None:
-        print(f"[-] No logs to parse in the {options.log} logfile!")
+        print(f"[-] No logs to parse in {log}.")
         sys.exit(1)
 
     # validate the user, fallback to rotated logs if not found
@@ -117,14 +118,18 @@ if __name__=="__main__":
             for fail in LOGS[user].fail_logs:
                 print(f"{user}:\t{fail}")
 
-    # output all logged IP addresses
+    # output all logged IP addresses (unique, sorted)
     elif options.ip and not options.user:
+        all_ips = set()
         for user in LOGS:
-            if user is None:
-                continue
             for ip in LOGS[user].ips:
                 if ip:
-                    print(f"{user}:\t{ip}")
+                    all_ips.add(ip)
+        if not all_ips:
+            print("[-] No IP addresses found in logs")
+        else:
+            for ip in sorted(all_ips):
+                print(ip)
 
     # output user-specific commands
     if options.commands and options.user:
